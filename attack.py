@@ -72,12 +72,12 @@ def keygen():
         elif v == 0:
             if k not in keys:
                 keys[k] = set()
-                for l1 in available:
-                    for l2 in available:
-                        keys[k].add(l1)
-                        keys[k].add(l2)
-                        if l1 != l2:
-                            keys[k].add(l1 + l2)
+            for l1 in available:
+                for l2 in available:
+                    keys[k].add(l1)
+                    keys[k].add(l2)
+                    if l1 != l2:
+                        keys[k].add(l1 + l2)
     return keys
 
 pp.pprint(keygen())
