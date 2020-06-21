@@ -48,6 +48,7 @@ for v in known_ciphered_mapping.values():
 available = {k: v for k, v in cleartext_mapping_count.items() if v < 2}.keys()
 available_cleartext_alphabet = set(available)
 
+
 def substr_gte4(s):
     """ Get substring greater than or equal to 4 characters long
     :param s:
@@ -94,9 +95,9 @@ def keygen():
     return permuted
 
 
-
 # Ciphered letters to skip because they already have two values
 ciphered_to_skip = ['N', 'P', 'Q', 'T']
+
 
 def check_assumptions(unique_key):
     """ Check assumptions that a ciphertext value can only have two plaintext values
@@ -112,20 +113,21 @@ def check_assumptions(unique_key):
         for possibility in v:
             # Exclude already counted single char mappings
             if (k == 'F' and possibility == 'O')\
-            or (k == 'G' and possibility == 'E') \
-            or (k == 'K' and possibility == 'A') \
-            or (k == 'M' and possibility == 'C') \
-            or (k == 'R' and possibility == 'T') \
-            or (k == 'S' and possibility == 'T') \
-            or (k == 'V' and possibility == 'L') \
-            or (k == 'Y' and possibility == 'E') \
-            or (k == 'Z' and possibility == 'L'):
+              or (k == 'G' and possibility == 'E') \
+              or (k == 'K' and possibility == 'A') \
+              or (k == 'M' and possibility == 'C') \
+              or (k == 'R' and possibility == 'T') \
+              or (k == 'S' and possibility == 'T') \
+              or (k == 'V' and possibility == 'L') \
+              or (k == 'Y' and possibility == 'E') \
+              or (k == 'Z' and possibility == 'L'):
                 continue
             else:
                 if mapping_count[k] + 1 > 2:
                     return False
                 mapping_count[k] += 1
     return True
+
 
 def get_unique_key(initial_prune, ciphererd_key, value_pos):
     # Removal of values as attempts are made and rules are violated
@@ -141,9 +143,9 @@ def get_unique_key(initial_prune, ciphererd_key, value_pos):
             continue
 
 
-
 # Cleartext letters already used twice between ciphertext letters
 cleartext_used_twice = ['L', 'E', 'T', 'C', 'N', 'O']
+
 
 def prune_keys(keys):
     viable_keys = list()
@@ -159,5 +161,5 @@ def prune_keys(keys):
                     initial_prune[k] = new_key
     return initial_prune
 
-pp.pprint(prune_keys(keygen()))
 
+pp.pprint(prune_keys(keygen()))
