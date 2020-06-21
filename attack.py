@@ -47,7 +47,6 @@ for v in known_ciphered_mapping.values():
 
 available = {k: v for k, v in cleartext_mapping_count.items() if v < 2}.keys()
 available_cleartext_alphabet = set(available)
-print(cleartext_mapping_count)
 
 def substr_gte4(s):
     """ Get substring greater than or equal to 4 characters long
@@ -94,5 +93,23 @@ def keygen():
             permuted[k].add(''.join(v))
     return permuted
 
-pp.pprint(keygen())
+
+def prune_keys(keys):
+    # Cleartext letters already used twice between ciphertext letters
+    cleartext_used_twice = ['L', 'E', 'T', 'C', 'N', 'O']
+    # Ciphered letters to skip because they already have two values
+    ciphered_to_skip = ['N', 'P', 'Q', 'T']
+    new_keys = keys.copy()
+    for k, v in keys.items():
+        if k in ciphered_to_skip:
+            continue
+        for possibility in v:
+            for candidate in cleartext_used_twice:
+                if candidate in possibility:
+                    new_key = v.copy()
+                    new_key.remove(possibility)
+                    new_keys[k] = new_key
+    return new_keys
+
+pp.pprint(prune_keys(keygen()))
 
