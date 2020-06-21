@@ -94,12 +94,60 @@ def keygen():
     return permuted
 
 
+
+# Ciphered letters to skip because they already have two values
+ciphered_to_skip = ['N', 'P', 'Q', 'T']
+
+def check_assumptions(unique_key):
+    """ Check assumptions that a ciphertext value can only have two plaintext values
+    and that plaintext values are only used a maximum of two times
+    :param unique_key:
+    :return:
+    """
+    mapping_count = cleartext_mapping_count.copy()
+    for k, v in unique_key:
+        # Exclude ciphered mappings that already have two values
+        if k in ciphered_to_skip:
+            continue
+        for possibility in v:
+            # Exclude already counted single char mappings
+            if (k == 'F' and possibility == 'O')\
+            or (k == 'G' and possibility == 'E') \
+            or (k == 'K' and possibility == 'A') \
+            or (k == 'M' and possibility == 'C') \
+            or (k == 'R' and possibility == 'T') \
+            or (k == 'S' and possibility == 'T') \
+            or (k == 'V' and possibility == 'L') \
+            or (k == 'Y' and possibility == 'E') \
+            or (k == 'Z' and possibility == 'L'):
+                continue
+            else:
+                if mapping_count[k] + 1 > 2:
+                    return False
+                mapping_count[k] += 1
+    return True
+
+def get_unique_key(initial_prune, ciphererd_key, value_pos):
+    # Removal of values as attempts are made and rules are violated
+    running_value_removal = initial_prune.copy()
+    unique_key = dict()
+    # Set ciphered_key's value to the position of value being attempted
+    unique_key[ciphererd_key] = initial_prune[ciphererd_key][value_pos]
+    for k, v in initial_prune:
+        if k == ciphererd_key:
+            continue
+        if k in ciphered_to_skip:
+            unique_key[k] = initial_prune[k]
+            continue
+
+
+
+# Cleartext letters already used twice between ciphertext letters
+cleartext_used_twice = ['L', 'E', 'T', 'C', 'N', 'O']
+
 def prune_keys(keys):
-    # Cleartext letters already used twice between ciphertext letters
-    cleartext_used_twice = ['L', 'E', 'T', 'C', 'N', 'O']
-    # Ciphered letters to skip because they already have two values
-    ciphered_to_skip = ['N', 'P', 'Q', 'T']
-    new_keys = keys.copy()
+    viable_keys = list()
+    initial_prune = keys.copy()
     for k, v in keys.items():
         if k in ciphered_to_skip:
             continue
@@ -108,8 +156,8 @@ def prune_keys(keys):
                 if candidate in possibility:
                     new_key = v.copy()
                     new_key.remove(possibility)
-                    new_keys[k] = new_key
-    return new_keys
+                    initial_prune[k] = new_key
+    return initial_prune
 
 pp.pprint(prune_keys(keygen()))
 
