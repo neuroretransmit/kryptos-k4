@@ -62,6 +62,7 @@ key_possibilities = 0
 
 
 def keygen():
+    """ Generate all possible values for ciphertext letters ignoring assumptions """
     keys = {}
     for letter in sorted(alphabet):
         if letter in known_ciphered_mapping:
@@ -131,16 +132,25 @@ def check_assumptions(unique_key):
 
 def get_unique_key(initial_prune, ciphererd_key, value_pos):
     # Removal of values as attempts are made and rules are violated
-    running_value_removal = initial_prune.copy()
     unique_key = dict()
     # Set ciphered_key's value to the position of value being attempted
     unique_key[ciphererd_key] = initial_prune[ciphererd_key][value_pos]
+    attempted_indices = {
+        'A': 0, 'B': 0, 'C': 0, 'D': 0, 'E': 0,
+        'F': 0, 'G': 0, 'H': 0, 'I': 0, 'J': 0,
+        'K': 0, 'L': 0, 'M': 0, 'N': 0, 'O': 0,
+        'P': 0, 'Q': 0, 'R': 0, 'S': 0, 'T': 0,
+        'U': 0, 'V': 0, 'W': 0, 'X': 0, 'Y': 0,
+        'Z': 0,
+    }
     for k, v in initial_prune:
         if k == ciphererd_key:
             continue
         if k in ciphered_to_skip:
             unique_key[k] = initial_prune[k]
             continue
+        # TODO: Generate unique key for an index, repeat with all other letters
+        # and run through check_assumptions
 
 
 # Cleartext letters already used twice between ciphertext letters
@@ -151,9 +161,11 @@ def prune_keys(keys):
     viable_keys = list()
     initial_prune = keys.copy()
     for k, v in keys.items():
+        # Skip ciphered chars that already have two plaintext chars
         if k in ciphered_to_skip:
             continue
         for possibility in v:
+            # Prune the possibilites that contain cleartext already used twice
             for candidate in cleartext_used_twice:
                 if candidate in possibility:
                     new_key = v.copy()
