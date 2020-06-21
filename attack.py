@@ -1,16 +1,11 @@
 #!/usr/bin/env python3
 
 import pprint as pp
-import itertools
-from collections import OrderedDict
-import random
-import enchant
 
 ciphertext      = 'OBKRUOXOGHULBSOLIFBBWFLRVQQPRNGKSSOTWTQSJQSSEKZZWATJKLUDIAWINFBNYPVTTMZFPKWGDKZXTJCDIGKUHUAUEKCAR'
 known_cleartext = 'OBKRUOXOGHULBSOLIFBBWFLRVNORTHEASTOTWTQSJQSSEKZZWATJKLUDIAWINFBBERLINCLOCKWGDKZXTJCDIGKUHUAUEKCAR'
 
 alphabet = set(ciphertext)
-alphabet_len = len(alphabet)
 
 # Populate known cipher characters to cleartext characters and used cleartext characters
 known_ciphered_mapping = {}
@@ -21,14 +16,6 @@ for i in range(len(ciphertext)):
             known_ciphered_mapping[ciphertext[i]] = set()
         known_ciphered_mapping[ciphertext[i]].add(known_cleartext[i])
         used.add(known_cleartext[i])
-
-unknown_alphabet = alphabet.copy()
-for letter in known_ciphered_mapping.keys():
-    unknown_alphabet.remove(letter)
-
-unused = alphabet.copy()
-for letter in used:
-    unused.remove(letter)
 
 # Used to count occurences in known values.
 # Converted to set of letters that haven't been used twice
@@ -107,7 +94,7 @@ def check_assumptions(unique_key):
     :return:
     """
     mapping_count = cleartext_mapping_count.copy()
-    for k, v in unique_key:
+    for k, v in unique_key.items():
         # Exclude ciphered mappings that already have two values
         if k in ciphered_to_skip:
             continue
@@ -130,27 +117,18 @@ def check_assumptions(unique_key):
     return True
 
 
-def get_unique_key(initial_prune, ciphererd_key, value_pos):
-    # Removal of values as attempts are made and rules are violated
+def get_unique_key(initial_prune, ciphererd_key, value_pos, attempted_indices):
     unique_key = dict()
-    # Set ciphered_key's value to the position of value being attempted
-    unique_key[ciphererd_key] = initial_prune[ciphererd_key][value_pos]
-    attempted_indices = {
-        'A': 0, 'B': 0, 'C': 0, 'D': 0, 'E': 0,
-        'F': 0, 'G': 0, 'H': 0, 'I': 0, 'J': 0,
-        'K': 0, 'L': 0, 'M': 0, 'N': 0, 'O': 0,
-        'P': 0, 'Q': 0, 'R': 0, 'S': 0, 'T': 0,
-        'U': 0, 'V': 0, 'W': 0, 'X': 0, 'Y': 0,
-        'Z': 0,
-    }
-    for k, v in initial_prune:
+    unique_key[ciphererd_key] = list(initial_prune[ciphererd_key])[value_pos]
+    for k, v in initial_prune.items():
         if k == ciphererd_key:
             continue
-        if k in ciphered_to_skip:
-            unique_key[k] = initial_prune[k]
+        unique_key[k] = list(initial_prune[k])[attempted_indices[k]]
+        if attempted_indices[k] + 1 >= len(initial_prune[k]):
             continue
-        # TODO: Generate unique key for an index, repeat with all other letters
-        # and run through check_assumptions
+        else:
+            attempted_indices[k] += 1
+    return unique_key, attempted_indices
 
 
 # Cleartext letters already used twice between ciphertext letters
@@ -171,7 +149,24 @@ def prune_keys(keys):
                     new_key = v.copy()
                     new_key.remove(possibility)
                     initial_prune[k] = new_key
-    return initial_prune
+    for k, v in initial_prune.items():
+        attempted_indices = {
+            'A': 0, 'B': 0, 'C': 0, 'D': 0, 'E': 0,
+            'F': 0, 'G': 0, 'H': 0, 'I': 0, 'J': 0,
+            'K': 0, 'L': 0, 'M': 0, 'N': 0, 'O': 0,
+            'P': 0, 'Q': 0, 'R': 0, 'S': 0, 'T': 0,
+            'U': 0, 'V': 0, 'W': 0, 'X': 0, 'Y': 0,
+            'Z': 0,
+        }
+        for i in range(len(v)):
+            unique_key, attempted_indices = get_unique_key(initial_prune, k, i, attempted_indices)
+            attempted_indices[k] = i
+            if not check_assumptions(unique_key):
+                continue
+            else:
+                viable_keys.append(unique_key)
+    return viable_keys
 
 
+print("Viable keys:")
 pp.pprint(prune_keys(keygen()))
