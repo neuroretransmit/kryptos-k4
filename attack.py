@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import pprint as pp
+import itertools
+from collections import OrderedDict
 import random
 import enchant
 
@@ -24,7 +26,7 @@ unknown_alphabet = alphabet.copy()
 for letter in known_ciphered_mapping.keys():
     unknown_alphabet.remove(letter)
 
-unused = alphabet
+unused = alphabet.copy()
 for letter in used:
     unused.remove(letter)
 
@@ -45,7 +47,7 @@ for v in known_ciphered_mapping.values():
 
 available = {k: v for k, v in cleartext_mapping_count.items() if v < 2}.keys()
 available_cleartext_alphabet = set(available)
-
+print(cleartext_mapping_count)
 
 def substr_gte4(s):
     """ Get substring greater than or equal to 4 characters long
@@ -61,24 +63,36 @@ key_possibilities = 0
 
 def keygen():
     keys = {}
-    for k, v in cleartext_mapping_count.items():
-        if v >= 1:
-            if k not in keys:
-                keys[k] = set()
-            keys[k].add(k)
-            for letter in available:
-                if k != letter:
-                    keys[k].add(k + letter)
-        elif v == 0:
-            if k not in keys:
-                keys[k] = set()
+    for letter in sorted(alphabet):
+        if letter in known_ciphered_mapping:
+            keys[letter] = known_ciphered_mapping[letter]
+            if len(keys[letter]) == 1:
+                for l1 in available:
+                    if l1 not in keys[letter]:
+                        keys[letter].add(l1)
+        else:
+            keys[letter] = set()
             for l1 in available:
+                keys[letter].add(l1)
                 for l2 in available:
-                    keys[k].add(l1)
-                    keys[k].add(l2)
                     if l1 != l2:
-                        keys[k].add(l1 + l2)
-    return keys
+                        keys[letter].add(l1)
+                        keys[letter].add(l2)
+    permuted = dict()
+    for k, v in keys.items():
+        permutations = set()
+        if len(v) != 2:
+            for l1 in v:
+                permutations.add(l1)
+                if len(v) != 1:
+                    for l2 in v:
+                        if l1 != l2:
+                            permutations.add(l1 + l2)
+            permuted[k] = permutations
+        else:
+            permuted[k] = set()
+            permuted[k].add(''.join(v))
+    return permuted
 
 pp.pprint(keygen())
 
